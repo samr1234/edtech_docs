@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Footer } from "@/components/Footer";
 
 function getInitials(name: string | null | undefined, email: string | null | undefined) {
   if (name) {
@@ -62,12 +63,12 @@ interface Document {
 
 function SkeletonCard() {
   return (
-    <div className="rounded-2xl overflow-hidden bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 animate-pulse">
-      <div className="h-24 bg-gray-200 dark:bg-gray-800" />
+    <div className="rounded-2xl overflow-hidden bg-gray-900/80 border border-white/8 animate-pulse">
+      <div className="h-24 bg-gray-800" />
       <div className="p-4 space-y-2.5">
-        <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded-full w-3/4" />
-        <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded-full w-1/2" />
-        <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded-full w-1/3" />
+        <div className="h-4 bg-gray-800 rounded-full w-3/4" />
+        <div className="h-3 bg-gray-800/70 rounded-full w-1/2" />
+        <div className="h-3 bg-gray-800/70 rounded-full w-1/3" />
       </div>
     </div>
   );
@@ -114,7 +115,25 @@ export function DocumentsClient() {
   const userEmail = session?.user?.email;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
+    <div
+      className="min-h-screen flex flex-col relative"
+      style={{
+        backgroundColor: "#030712",
+        backgroundImage: `
+          linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)
+        `,
+        backgroundSize: "72px 72px",
+      }}
+    >
+      {/* Emerald glow from top */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: "radial-gradient(ellipse 100% 40% at 50% 0%, rgba(16,185,129,0.12), transparent)",
+        }}
+      />
+
 
       {/* Navbar */}
       <header className="sticky top-0 z-30 bg-gray-950/90 backdrop-blur border-b border-white/8 text-white px-6 h-14 flex items-center justify-between">
@@ -149,15 +168,15 @@ export function DocumentsClient() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-10">
+      <main className="relative z-10 flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-10">
 
         {/* Hero row */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
               {getGreeting()}{userName ? `, ${userName}` : ""}.
             </h1>
-            <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+            <p className="text-sm text-gray-400 mt-1">
               {loading
                 ? "Loading your workspace…"
                 : documents.length === 0
@@ -185,7 +204,7 @@ export function DocumentsClient() {
             <label htmlFor="doc-search" className="sr-only">Search documents</label>
             <div className="relative max-w-sm">
               <svg
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4 pointer-events-none"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 pointer-events-none"
                 fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true"
               >
                 <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
@@ -196,7 +215,7 @@ export function DocumentsClient() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search documents…"
-                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-colors"
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-700 bg-gray-800/60 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-colors"
               />
             </div>
           </div>
@@ -212,13 +231,13 @@ export function DocumentsClient() {
         {/* Empty state */}
         {!loading && documents.length === 0 && (
           <div className="flex flex-col items-center justify-center py-32 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" aria-hidden="true">
+            <div className="w-16 h-16 rounded-2xl bg-gray-800 flex items-center justify-center mb-4">
+              <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
               </svg>
             </div>
-            <h2 className="text-base font-semibold text-gray-700 dark:text-gray-300 mb-1">No documents yet</h2>
-            <p className="text-sm text-gray-400 dark:text-gray-500 mb-6">Create your first document to get started.</p>
+            <h2 className="text-base font-semibold text-gray-300 mb-1">No documents yet</h2>
+            <p className="text-sm text-gray-500 mb-6">Create your first document to get started.</p>
             <button
               onClick={createDocument}
               disabled={creating}
@@ -231,7 +250,7 @@ export function DocumentsClient() {
 
         {/* No search results */}
         {!loading && documents.length > 0 && filtered.length === 0 && (
-          <div className="text-center py-16 text-gray-400 dark:text-gray-500 text-sm">
+          <div className="text-center py-16 text-gray-500 text-sm">
             No documents match &quot;{search}&quot;
           </div>
         )}
@@ -249,7 +268,7 @@ export function DocumentsClient() {
                   key={doc.id}
                   onClick={() => router.push(`/documents/${doc.id}`)}
                   aria-label={`Open ${doc.title || "Untitled"}`}
-                  className="group text-left rounded-2xl overflow-hidden bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700 shadow-sm hover:shadow-lg transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                  className="group text-left rounded-2xl overflow-hidden bg-gray-900/80 border border-white/8 hover:border-white/15 shadow-sm hover:shadow-xl hover:shadow-black/30 backdrop-blur-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                 >
                   {/* Colour strip */}
                   <div className={`h-24 bg-linear-to-br ${cardGradient(doc.id)} relative overflow-hidden`}>
@@ -269,15 +288,15 @@ export function DocumentsClient() {
 
                   {/* Card body */}
                   <div className="p-4">
-                    <p className="font-semibold text-gray-900 dark:text-gray-100 truncate text-sm group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                    <p className="font-semibold text-gray-100 truncate text-sm group-hover:text-emerald-400 transition-colors">
                       {doc.title || "Untitled"}
                     </p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 truncate mt-0.5">
+                    <p className="text-xs text-gray-500 truncate mt-0.5">
                       {isShared
                         ? `by ${doc.owner.name || doc.owner.email || "Unknown"}`
                         : "My document"}
                     </p>
-                    <p className="text-xs text-gray-300 dark:text-gray-600 mt-2">
+                    <p className="text-xs text-gray-600 mt-2">
                       {timeAgo(doc.updatedAt)}
                     </p>
                   </div>
@@ -287,6 +306,7 @@ export function DocumentsClient() {
           </div>
         )}
       </main>
+      <div className="relative z-10"><Footer /></div>
     </div>
   );
 }
