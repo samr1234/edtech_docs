@@ -18,7 +18,9 @@ export function Toolbar({ editor, isReadOnly }: ToolbarProps) {
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
   const [linkError, setLinkError] = useState("");
+  const [popoverStyle, setPopoverStyle] = useState<React.CSSProperties>({});
   const linkInputRef = useRef<HTMLInputElement>(null);
+  const linkButtonRef = useRef<HTMLButtonElement>(null);
   const savedSelection = useRef<{ from: number; to: number } | null>(null);
 
   useEffect(() => {
@@ -37,6 +39,28 @@ export function Toolbar({ editor, isReadOnly }: ToolbarProps) {
     savedSelection.current = { from, to };
     const attrs = editor!.getAttributes("link");
     setLinkUrl(attrs.href ?? "https://");
+
+    if (linkButtonRef.current) {
+      const rect = linkButtonRef.current.getBoundingClientRect();
+      const isMobile = window.innerWidth < 768;
+      if (isMobile) {
+        setPopoverStyle({
+          position: "fixed",
+          top: rect.bottom + 6,
+          left: 8,
+          right: 8,
+        });
+      } else {
+        // Position to the right of the sidebar button
+        setPopoverStyle({
+          position: "fixed",
+          top: Math.max(8, rect.top - 20),
+          left: rect.right + 8,
+          width: 240,
+        });
+      }
+    }
+
     setShowLinkInput(true);
   }
 
@@ -83,6 +107,7 @@ export function Toolbar({ editor, isReadOnly }: ToolbarProps) {
     action: () => void;
     isActive: boolean;
     cls?: string;
+    ref?: React.RefObject<HTMLButtonElement | null>;
   };
 
   const groups: Btn[][] = [
@@ -102,7 +127,7 @@ export function Toolbar({ editor, isReadOnly }: ToolbarProps) {
       { label: "1.",  title: "Numbered list",  action: () => editor.chain().focus().toggleOrderedList().run(),              isActive: editor.isActive("orderedList") },
     ],
     [
-      { label: "⌘",   title: editor.isActive("link") ? "Remove link" : "Add link",  action: handleLinkButton,             isActive: editor.isActive("link"),              cls: "text-base" },
+      { label: "⌘",   title: editor.isActive("link") ? "Remove link" : "Add link",  action: handleLinkButton,             isActive: editor.isActive("link"),              cls: "text-base", ref: linkButtonRef },
       { label: "❝",   title: "Blockquote",     action: () => editor.chain().focus().toggleBlockquote().run(),              isActive: editor.isActive("blockquote"),        cls: "text-base" },
       { label: "</>", title: "Inline code",    action: () => editor.chain().focus().toggleCode().run(),                    isActive: editor.isActive("code"),              cls: "font-mono text-[10px]" },
     ],
@@ -122,11 +147,11 @@ export function Toolbar({ editor, isReadOnly }: ToolbarProps) {
     <aside
       aria-label="Formatting toolbar"
       className={clsx(
-        "bg-white dark:bg-gray-900 shrink-0 relative",
+        "bg-white dark:bg-gray-900 shrink-0",
         // Mobile horizontal bar
         "flex flex-row overflow-x-auto border-b border-gray-200 dark:border-gray-700 px-2 py-1.5 gap-1 w-full",
         // Desktop vertical sidebar
-        "md:flex-col md:overflow-y-auto md:overflow-x-hidden md:border-b-0 md:border-r md:px-0 md:py-3 md:gap-1 md:w-12 md:h-full",
+        "md:flex-col md:overflow-visible md:border-b-0 md:border-r md:px-0 md:py-3 md:gap-1 md:w-12 md:h-full",
       )}
     >
       {groups.map((group, gi) => (
@@ -137,6 +162,7 @@ export function Toolbar({ editor, isReadOnly }: ToolbarProps) {
           {group.map((btn) => (
             <button
               key={btn.title}
+              ref={btn.ref}
               onMouseDown={noFocusSteal}
               onClick={btn.action}
               aria-label={btn.title}
@@ -173,18 +199,13 @@ export function Toolbar({ editor, isReadOnly }: ToolbarProps) {
         </button>
       </div>
 
-      {/* Link URL popover */}
+      {/* Link URL popover — rendered with fixed positioning so no overflow container clips it */}
       {showLinkInput && (
         <div
           role="dialog"
           aria-label="Insert link"
-          className={clsx(
-            "absolute z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-3",
-            // Mobile: full-width below the toolbar bar
-            "left-2 right-2 top-full mt-1",
-            // Desktop: to the right of the sidebar, vertically centred
-            "md:left-full md:right-auto md:w-60 md:top-[calc(50%-60px)] md:mt-0 md:ml-2",
-          )}
+          style={popoverStyle}
+          className="z-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-3"
         >
           <p className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-2">Insert link</p>
           <label htmlFor="toolbar-link-input" className="sr-only">URL</label>
