@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { handleError } from "@/lib/api-error";
 
 export async function POST(req: NextRequest) {
+  console.log(process.env.DATABASE_URL ? "DATABASE_URL exists" : "DATABASE_URL missing");
   try {
     const body = await req.json();
     const { name, email, password } = body;
