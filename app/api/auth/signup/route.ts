@@ -1,16 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { handleError } from "@/lib/api-error";
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, email, password } = await req.json();
+    const body = await req.json();
+    const { name, email, password } = body;
 
     if (!email || !password) {
       return NextResponse.json(
         { error: "Email and password are required" },
         { status: 400 }
       );
+    }
+
+    if (typeof email !== "string" || typeof password !== "string") {
+      return NextResponse.json({ error: "Invalid input types" }, { status: 400 });
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -43,7 +49,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(user, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  } catch (err) {
+    return handleError(err);
   }
 }
