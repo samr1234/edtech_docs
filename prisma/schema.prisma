@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Required by NextAuth
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Your models
+model User {
+  id            String                @id @default(cuid())
+  name          String?
+  email         String?               @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  accounts      Account[]
+  sessions      Session[]
+  documents     Document[]
+  permissions   DocumentPermission[]
+  operations    Operation[]
+  versions      Version[]
+  createdAt     DateTime              @default(now())
+}
+
+model Document {
+  id          String               @id @default(cuid())
+  title       String               @default("Untitled")
+  owner       User                 @relation(fields: [ownerId], references: [id])
+  ownerId     String
+  version     Int                  @default(0)
+  permissions DocumentPermission[]
+  operations  Operation[]
+  versions    Version[]
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+}
+
+model DocumentPermission {
+  id         String   @id @default(cuid())
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  role       Role     @default(VIEWER)
+  createdAt  DateTime @default(now())
+
+  @@unique([documentId, userId])
+}
+
+model Operation {
+  id         String   @id @default(cuid())
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId String
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  update     Bytes    // Yjs binary update
+  version    Int      // server version when this was applied
+  clientId   String
+  createdAt  DateTime @default(now())
+
+  @@index([documentId, version])
+}
+
+model Version {
+  id         String   @id @default(cuid())
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId String
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  label      String?
+  snapshot   Bytes    // full Yjs document state
+  isAutoSave Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([documentId, createdAt])
+}
+
+enum Role {
+  OWNER
+  EDITOR
+  VIEWER
+}
