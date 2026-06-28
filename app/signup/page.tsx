@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Footer } from "@/components/Footer";
+import { parseApiError } from "@/lib/format-error";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -26,8 +27,7 @@ export default function SignupPage() {
     });
 
     if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      setError(data.error || "Signup failed. Please try again.");
+      setError(await parseApiError(res));
       setLoading(false);
       return;
     }

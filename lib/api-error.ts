@@ -1,33 +1,38 @@
 import { NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
 
 export function apiError(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
 }
 
+const GENERIC = "Something went wrong, please try again later.";
+
+function isKnownPrismaError(err: unknown): err is { code: string } {
+  return (
+    typeof err === "object" &&
+    err !== null &&
+    "code" in err &&
+    typeof (err as Record<string, unknown>).code === "string" &&
+    (err as Record<string, unknown>).code !== undefined
+  );
+}
+
 export function handleError(err: unknown) {
-  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+  if (isKnownPrismaError(err)) {
     switch (err.code) {
       case "P2002":
-        return apiError("A record with this value already exists", 409);
+        return apiError("A record with this value already exists.", 409);
       case "P2025":
-        return apiError("Record not found", 404);
+        return apiError("The requested item could not be found.", 404);
       case "P2003":
-        return apiError("Related record not found", 400);
+        return apiError("A related item could not be found.", 400);
       case "P2016":
-        return apiError("Record not found", 404);
+        return apiError("The requested item could not be found.", 404);
       default:
-        return apiError(`Database error (${err.code})`, 500);
+        return apiError(GENERIC, 500);
     }
   }
-  if (err instanceof Prisma.PrismaClientValidationError) {
-    return apiError("Invalid data provided", 400);
-  }
-  if (err instanceof Prisma.PrismaClientInitializationError) {
-    return apiError("Database connection failed", 503);
-  }
   if (err instanceof SyntaxError) {
-    return apiError("Invalid JSON in request body", 400);
+    return apiError(GENERIC, 400);
   }
-  return apiError("Internal server error", 500);
+  return apiError(GENERIC, 500);
 }

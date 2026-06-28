@@ -5,6 +5,7 @@ export interface LocalDocument {
   title: string;
   yjsState: Uint8Array;
   updatedAt: number;
+  userRole?: string;
 }
 
 export interface OutboxItem {

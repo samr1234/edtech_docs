@@ -111,7 +111,7 @@ export function Editor({ docId, userRole, initialTitle, userName, userEmail }: E
     }
     clientIdRef.current = clientId;
 
-    // Ensure doc record exists in local Dexie store
+    // Ensure doc record exists and always persist latest title + role for offline fallback
     db.documents.get(docId).then((existing) => {
       if (!existing) {
         db.documents.add({
@@ -119,7 +119,10 @@ export function Editor({ docId, userRole, initialTitle, userName, userEmail }: E
           title: initialTitle,
           yjsState: new Uint8Array(),
           updatedAt: Date.now(),
+          userRole,
         });
+      } else {
+        db.documents.update(docId, { title: initialTitle, userRole });
       }
     });
 

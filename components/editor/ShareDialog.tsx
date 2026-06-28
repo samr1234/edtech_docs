@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { parseApiError } from "@/lib/format-error";
 
 interface Permission {
   id: string;
@@ -83,8 +84,7 @@ export function ShareDialog({ docId, isOpen, onClose }: ShareDialogProps) {
     });
     setLoading(false);
     if (!res.ok) {
-      const data = await res.json();
-      setError(data.error || "Failed to share");
+      setError(await parseApiError(res));
       return;
     }
     setEmail("");

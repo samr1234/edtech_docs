@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { type Editor } from "@tiptap/react";
+import { parseApiError } from "@/lib/format-error";
 
 interface AiPanelProps {
   docId: string;
@@ -53,8 +54,7 @@ export function AiPanel({ docId, editor, isOpen, onClose }: AiPanelProps) {
 
     setLoading(false);
     if (!res.ok) {
-      const data = await res.json();
-      setError(data.error || "AI request failed");
+      setError(await parseApiError(res));
       return;
     }
     const { result } = await res.json();
